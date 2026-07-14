@@ -1,0 +1,2 @@
+import { describe, expect, it } from 'vitest'; import { htmlToMarkdown } from '../core/htmlToMarkdown';
+describe('htmlToMarkdown',()=>{ it('converts inline and block elements',()=>{ expect(htmlToMarkdown('<p><strong>Bold</strong> <em>x</em><br><s>gone</s></p>')).toBe('**Bold** *x*\n~~gone~~'); }); it('handles links and lists safely',()=>{ expect(htmlToMarkdown('<a href="javascript:alert(1)">bad</a><a href="https://x.test">ok</a>')).toBe('bad[ok](https://x.test)'); expect(htmlToMarkdown('<ul><li>One</li><li><u>Two</u></li></ul>')).toBe('- One\n- <u>Two</u>'); });});
