@@ -246,6 +246,10 @@ export function PanelApp() {
           </section>
         </section>
       )}
+
+      <footer className="copyright-notice" aria-label="Copyright notice">
+        © 2026 HumanEyes - All Rights Reserved.
+      </footer>
     </main>
   );
 }

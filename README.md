@@ -110,3 +110,8 @@ Upload these SVG assets when configuring the Miro app icon:
 - Full-color toolbar panel and Marketplace icon: `public/icons/full-color.svg`
 
 Both icons are square SVGs, non-empty, and under the 5000 byte upload limit. The monochrome icon uses a single solid color and no gradients.
+
+## Copyright
+
+© 2026 HumanEyes - All Rights Reserved.
+
