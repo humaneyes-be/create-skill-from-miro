@@ -1,8 +1,8 @@
 # Board to Skill
 
-Board to Skill is a Miro Web SDK app that converts specifically named Miro frames into a downloadable ChatGPT Skill ZIP file.
+Board to Skill is a Miro Web SDK app that converts specifically named Miro frames into a downloadable SKILL ZIP file.
 
-The app scans a board, serializes frame contents into text files, validates the required Skill files, and packages the result as `skill.zip`.
+The app scans a board, serializes frame contents into text files, validates the required Skill files, and packages the result as `SKILL.zip`.
 
 ## What it does
 
