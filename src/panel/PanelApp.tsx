@@ -17,6 +17,17 @@ function logDiagnostics(context: string, diagnostics: Diagnostic[]) {
   }
 }
 
+
+function logGeneratedTextFiles(context: string, files: ScanResult['files']) {
+  for (const file of files) {
+    if (typeof file.content !== 'string') continue;
+
+    console.info(`[Create SKILL] ${context}: generated ${file.path} (${file.size} bytes).`);
+    console.info(`[Create SKILL] ${context}: text output for ${file.path}:
+${file.content}`);
+  }
+}
+
 function diagnosticUiMessage(diagnostic: Diagnostic): string {
   if (diagnostic.code === 'INVALID_FRAME_PATH') return 'The name of this frame is invalid.';
   if (diagnostic.code === 'FRAME_EXTENSION_NOT_ALLOWED') return 'Frame names should not include file extensions.';
@@ -41,6 +52,7 @@ export function PanelApp() {
     try {
       console.info('[Create SKILL] Starting board scan.');
       const scan = await scanBoard('entire');
+      logGeneratedTextFiles('Frame processing result', scan.files);
       const validation = validateSkillFiles(scan.files);
       const excludedDiagnostics = scan.excludedFrames.flatMap((frame) => frame.diagnostics);
       const diagnostics = [...scan.diagnostics, ...validation.diagnostics];
@@ -67,6 +79,7 @@ export function PanelApp() {
     if (!result) return;
 
     setStatus('Validating SKILL…');
+    logGeneratedTextFiles('Export validation input', result.files);
     const validation = validateSkillFiles(result.files);
     logDiagnostics('Export validation diagnostic', validation.diagnostics);
 
