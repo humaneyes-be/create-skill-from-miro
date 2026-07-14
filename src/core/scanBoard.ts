@@ -11,6 +11,31 @@ function summarizeDiagnostics(diagnostics: Diagnostic[]): string {
   return diagnostics.map((d) => d.message).join(' ');
 }
 
+const DEBUG_MIRO_ITEMS = false;
+
+function debugMiroChildren(logicalPath: string, children: unknown[]): void {
+  if (!DEBUG_MIRO_ITEMS) return;
+
+  console.group(`[Create SKILL] Children of ${logicalPath}`);
+
+  for (const item of children as any[]) {
+    console.info('[Create SKILL] Raw child:', item);
+    console.info('[Create SKILL] Child summary:', {
+      id: item.id,
+      type: item.type,
+      keys: Object.keys(item),
+      content: item.content,
+      text: item.text,
+      code: item.code,
+      data: item.data,
+      title: item.title,
+      style: item.style,
+    });
+  }
+
+  console.groupEnd();
+}
+
 export async function scanBoard(mode: 'entire' | 'selected' = 'entire'): Promise<ScanResult> {
   const board = (globalThis as any).miro.board;
   const raw = mode === 'selected' ? await board.getSelection() : await board.get({ type: 'frame' });
@@ -62,6 +87,7 @@ export async function scanBoard(mode: 'entire' | 'selected' = 'entire'): Promise
 
     seen.set(parsed.outputPath, frame.id);
     const children = await frame.getChildren();
+    debugMiroChildren(parsed.logicalPath, children);
     frames.push({
       id: frame.id,
       title: frame.title,
