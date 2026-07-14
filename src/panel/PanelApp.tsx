@@ -2,7 +2,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { scanBoard } from '../core/scanBoard';
 import { validateSkillFiles } from '../core/validateSkill';
 import { buildSkillZip, downloadZip } from '../core/buildSkillZip';
+import type { Diagnostic } from '../model/diagnostics';
 import type { ScanResult } from '../model/scanResult';
+
+function logDiagnostics(context: string, diagnostics: Diagnostic[]) {
+  for (const diagnostic of diagnostics) {
+    const target = diagnostic.framePath ? ` frame="${diagnostic.framePath}"` : '';
+    const item = diagnostic.itemId ? ` item="${diagnostic.itemId}"` : '';
+    const message = `[Board to SKILL] ${context}: ${diagnostic.code}${target}${item} - ${diagnostic.message}`;
+
+    if (diagnostic.level === 'error') console.error(message, diagnostic.details ?? '');
+    else if (diagnostic.level === 'warning') console.warn(message, diagnostic.details ?? '');
+    else console.info(message, diagnostic.details ?? '');
+  }
+}
 
 export function PanelApp() {
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -11,15 +24,24 @@ export function PanelApp() {
   const hasScanned = useRef(false);
 
   const runScan = useCallback(async () => {
-    setStatus('Scanning board');
+    setStatus('Scanning board…');
     setBlob(null);
 
     try {
+      console.info('[Board to SKILL] Starting board scan.');
       const scan = await scanBoard('entire');
       const validation = validateSkillFiles(scan.files);
-      setResult({ ...scan, diagnostics: [...scan.diagnostics, ...validation.diagnostics] });
-      setStatus('Scan complete');
+      const excludedDiagnostics = scan.excludedFrames.flatMap((frame) => frame.diagnostics);
+      const diagnostics = [...scan.diagnostics, ...validation.diagnostics];
+      logDiagnostics('Excluded frame diagnostic', excludedDiagnostics);
+      logDiagnostics('Scan diagnostic', diagnostics);
+      console.info(
+        `[Board to SKILL] Scan finished: included=${scan.frames.length}, excluded=${scan.excludedFrames.length}, files=${scan.files.length}, errors=${diagnostics.filter((diagnostic) => diagnostic.level === 'error').length}.`,
+      );
+      setResult({ ...scan, diagnostics });
+      setStatus('');
     } catch (e) {
+      console.error('[Board to SKILL] Scan failed with an unexpected error.', e);
       setStatus(e instanceof Error ? e.message : String(e));
     }
   }, []);
@@ -33,85 +55,65 @@ export function PanelApp() {
   async function build() {
     if (!result) return;
 
-    setStatus('Validating SKILL');
+    setStatus('Validating SKILL…');
     const validation = validateSkillFiles(result.files);
+    logDiagnostics('Export validation diagnostic', validation.diagnostics);
 
     if (validation.diagnostics.some((diagnostic) => diagnostic.level === 'error') || !validation.rootName) {
+      console.error('[Board to SKILL] Export blocked. Fix the listed validation errors before creating the ZIP.');
       setResult({ ...result, diagnostics: [...result.diagnostics, ...validation.diagnostics] });
-      setStatus('Fix blocking errors before export');
+      setStatus('Fix blocking errors before export.');
       return;
     }
 
-    setStatus('Compressing ZIP');
+    setStatus('Compressing ZIP…');
     const zip = await buildSkillZip(validation.rootName, result.files);
     setBlob(zip);
-    setStatus('Your SKILL is ready');
+    setStatus('Your SKILL is ready.');
+    console.info('[Board to SKILL] ZIP build completed successfully.');
   }
 
   const errors = result?.diagnostics.filter((diagnostic) => diagnostic.level === 'error') ?? [];
-  const warnings = result?.diagnostics.filter((diagnostic) => diagnostic.level === 'warning') ?? [];
   const hasExcludedFrames = Boolean(result?.excludedFrames.length);
 
   return (
     <main>
-      <h1>Board to SKILL</h1>
-      <p>Turn export frames on this board into a SKILL.</p>
       {status && <p className="status">{status}</p>}
       {result && (
-        <section>
-          <h2>Scan result</h2>
-          {hasExcludedFrames && (
-            <p className="warning notice">
-              Some frames were excluded because they have errors. Rename or fix them, then reopen the plugin to rescan.
-            </p>
+        <section aria-label="Board frame export results">
+          <h2>Included frames ({result.frames.length})</h2>
+          {result.frames.length ? (
+            <ul>{result.frames.map((frame) => <li key={frame.id}>{frame.logicalPath}</li>)}</ul>
+          ) : (
+            <p className="empty">No frames are ready to export.</p>
           )}
-          <dl>
-            <dt>Included frames</dt>
-            <dd>{result.frames.length}</dd>
-            <dt>Excluded frames</dt>
-            <dd>{result.excludedFrames.length}</dd>
-            <dt>Content files</dt>
-            <dd>{result.files.length}</dd>
-            <dt>Assets</dt>
-            <dd>{result.assets.length}</dd>
-            <dt>Errors</dt>
-            <dd>{errors.length}</dd>
-            <dt>Warnings</dt>
-            <dd>{warnings.length}</dd>
-          </dl>
-          <h3>Included frames</h3>
-          <ul>{result.frames.map((frame) => <li key={frame.id}>{frame.logicalPath}</li>)}</ul>
-          <h3>Excluded frames</h3>
+
+          <h2>Excluded frames ({result.excludedFrames.length})</h2>
           {hasExcludedFrames ? (
             <ul>
               {result.excludedFrames.map((frame) => (
-                <li key={frame.id} className="error">
-                  <strong>{frame.title}</strong>: {frame.reason}
+                <li key={frame.id} className="error frame-error">
+                  <strong>{frame.title}</strong>
+                  <span>{frame.reason}</span>
+                  <small>
+                    {frame.diagnostics.map((diagnostic) => diagnostic.code).join(', ')}
+                  </small>
                 </li>
               ))}
             </ul>
           ) : (
-            <p>No frames were excluded.</p>
+            <p className="empty">No frames were excluded.</p>
           )}
+
+          {errors.length > 0 && (
+            <p className="error notice">
+              Export is blocked. Review the excluded frames above and make sure required frames like /SKILL and
+              /agents/openai are included and valid.
+            </p>
+          )}
+
           <button onClick={build} disabled={errors.length > 0}>Create SKILL.zip</button>
           {blob && <button onClick={() => downloadZip(blob)}>Download SKILL.zip</button>}
-          <h3>Files</h3>
-          <ul>{result.files.map((file) => <li key={file.path}>{file.path}</li>)}</ul>
-          <h3>Preview</h3>
-          {result.files.filter((file) => typeof file.content === 'string').map((file) => (
-            <details key={file.path}>
-              <summary>{file.path}</summary>
-              <pre>{file.content as string}</pre>
-            </details>
-          ))}
-          <h3>Diagnostics</h3>
-          <ul>
-            {result.diagnostics.map((diagnostic, index) => (
-              <li key={index} className={diagnostic.level}>
-                <strong>{diagnostic.code}</strong>: {diagnostic.message}
-              </li>
-            ))}
-          </ul>
         </section>
       )}
     </main>
