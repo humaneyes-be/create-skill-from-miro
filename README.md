@@ -92,7 +92,7 @@ To enable deployment:
 3. Set **Source** to **GitHub Actions**.
 4. Push to `main` or run the **Deploy to GitHub Pages** workflow manually.
 
-The production build uses `/board-to-skill/` as the Vite base path when running in GitHub Actions, so assets resolve correctly from the project Pages URL.
+The production build uses `/create-skill-from-miro/` as the Vite base path when running in GitHub Actions, so assets resolve correctly from the project Pages URL.
 
 ## Project scripts
 
