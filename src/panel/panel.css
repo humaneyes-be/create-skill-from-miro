@@ -369,3 +369,12 @@ ul {
     transform: rotate(360deg);
   }
 }
+
+.copyright-notice {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0.72;
+}
