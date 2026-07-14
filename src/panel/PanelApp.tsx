@@ -86,44 +86,27 @@ export function PanelApp() {
 
   const errors = result?.diagnostics.filter((diagnostic) => diagnostic.level === 'error') ?? [];
   const hasExcludedFrames = Boolean(result?.excludedFrames.length);
-  const hasExcludedFrameErrors = Boolean(
-    result?.excludedFrames.some((frame) => frame.diagnostics.some((diagnostic) => diagnostic.level === 'error')),
-  );
 
   return (
     <main>
       {status && <p className="status">{status}</p>}
       {result && (
         <section aria-label="Board frame export results">
-          <h2>Included frames ({result.frames.length})</h2>
-          {result.frames.length ? (
-            <ul>{result.frames.map((frame) => <li key={frame.id}>{frame.logicalPath}</li>)}</ul>
-          ) : (
-            <p className="empty">No frames are ready to export.</p>
-          )}
+          <button onClick={build}>Create SKILL.zip</button>
+          {blob && <button onClick={() => downloadZip(blob)}>Download SKILL.zip</button>}
 
           <h2>Excluded frames ({result.excludedFrames.length})</h2>
           {hasExcludedFrames ? (
             <ul>
               {result.excludedFrames.map((frame) => (
-                <li key={frame.id} className="error frame-error">
+                <li key={frame.id} className="excluded-frame">
                   <strong>{frame.title}</strong>
                   <span>{summarizeDiagnosticsForUi(frame.diagnostics)}</span>
-                  <small>
-                    {frame.diagnostics.map((diagnostic) => diagnostic.code).join(', ')}
-                  </small>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="empty">No frames were excluded.</p>
-          )}
-
-          {hasExcludedFrameErrors && (
-            <p className="warning notice warning-notice">
-              Some frames have problems and will not be exported. You can still create the ZIP, but not everything might
-              be exported.
-            </p>
           )}
 
           {errors.length > 0 && (
@@ -132,9 +115,6 @@ export function PanelApp() {
               valid.
             </p>
           )}
-
-          <button onClick={build}>Create SKILL.zip</button>
-          {blob && <button onClick={() => downloadZip(blob)}>Download SKILL.zip</button>}
         </section>
       )}
     </main>

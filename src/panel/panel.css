@@ -84,18 +84,11 @@ ul {
   margin: 0 0 12px;
 }
 
-.frame-error {
+.excluded-frame {
   margin-bottom: 8px;
 }
 
-.frame-error strong,
-.frame-error span,
-.frame-error small {
+.excluded-frame strong,
+.excluded-frame span {
   display: block;
-}
-
-.frame-error small {
-  color: #7f1d1d;
-  font-size: 11px;
-  margin-top: 2px;
 }
