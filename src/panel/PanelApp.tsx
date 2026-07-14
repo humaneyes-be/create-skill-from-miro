@@ -9,7 +9,7 @@ function logDiagnostics(context: string, diagnostics: Diagnostic[]) {
   for (const diagnostic of diagnostics) {
     const target = diagnostic.framePath ? ` frame="${diagnostic.framePath}"` : '';
     const item = diagnostic.itemId ? ` item="${diagnostic.itemId}"` : '';
-    const message = `[Board to SKILL] ${context}: ${diagnostic.code}${target}${item} - ${diagnostic.message}`;
+    const message = `[Create SKILL] ${context}: ${diagnostic.code}${target}${item} - ${diagnostic.message}`;
 
     if (diagnostic.level === 'error') console.error(message, diagnostic.details ?? '');
     else if (diagnostic.level === 'warning') console.warn(message, diagnostic.details ?? '');
@@ -39,7 +39,7 @@ export function PanelApp() {
     setBlob(null);
 
     try {
-      console.info('[Board to SKILL] Starting board scan.');
+      console.info('[Create SKILL] Starting board scan.');
       const scan = await scanBoard('entire');
       const validation = validateSkillFiles(scan.files);
       const excludedDiagnostics = scan.excludedFrames.flatMap((frame) => frame.diagnostics);
@@ -47,12 +47,12 @@ export function PanelApp() {
       logDiagnostics('Excluded frame diagnostic', excludedDiagnostics);
       logDiagnostics('Scan diagnostic', diagnostics);
       console.info(
-        `[Board to SKILL] Scan finished: included=${scan.frames.length}, excluded=${scan.excludedFrames.length}, files=${scan.files.length}, errors=${diagnostics.filter((diagnostic) => diagnostic.level === 'error').length}.`,
+        `[Create SKILL] Scan finished: included=${scan.frames.length}, excluded=${scan.excludedFrames.length}, files=${scan.files.length}, errors=${diagnostics.filter((diagnostic) => diagnostic.level === 'error').length}.`,
       );
       setResult({ ...scan, diagnostics });
       setStatus('');
     } catch (e) {
-      console.error('[Board to SKILL] Scan failed with an unexpected error.', e);
+      console.error('[Create SKILL] Scan failed with an unexpected error.', e);
       setStatus(e instanceof Error ? e.message : String(e));
     }
   }, []);
@@ -71,7 +71,7 @@ export function PanelApp() {
     logDiagnostics('Export validation diagnostic', validation.diagnostics);
 
     if (validation.diagnostics.some((diagnostic) => diagnostic.level === 'error') || !validation.rootName) {
-      console.error('[Board to SKILL] Export blocked. Fix the listed validation errors before creating the ZIP.');
+      console.error('[Create SKILL] Export blocked. Fix the listed validation errors before creating the ZIP.');
       setResult({ ...result, diagnostics: [...result.diagnostics, ...validation.diagnostics] });
       setStatus('Fix blocking errors before export.');
       return;
@@ -81,7 +81,7 @@ export function PanelApp() {
     const zip = await buildSkillZip(validation.rootName, result.files);
     setBlob(zip);
     setStatus('Your SKILL is ready.');
-    console.info('[Board to SKILL] ZIP build completed successfully.');
+    console.info('[Create SKILL] ZIP build completed successfully.');
   }
 
   const errors = result?.diagnostics.filter((diagnostic) => diagnostic.level === 'error') ?? [];
@@ -91,7 +91,7 @@ export function PanelApp() {
     <main>
       {status && <p className="status">{status}</p>}
       {result && (
-        <section aria-label="Board frame export results">
+        <section aria-label="Miro frame export results">
           <button onClick={build}>Create SKILL.zip</button>
           {blob && <button onClick={() => downloadZip(blob)}>Download SKILL.zip</button>}
 
