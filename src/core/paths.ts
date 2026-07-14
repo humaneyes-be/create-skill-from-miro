@@ -21,8 +21,8 @@ export function parseFramePath(title: string): PathResult {
   const diagnostics: Diagnostic[] = [];
   if (!title.trim().startsWith('/')) diagnostics.push(error('INVALID_FRAME_PATH', 'Export frame paths must start with /.'));
   if (/[?#\u0000-\u001f\u007f]/.test(title) || normalized.includes('/../') || normalized.endsWith('/..')) diagnostics.push(error('INVALID_FRAME_PATH', 'Frame path contains unsafe characters or traversal.'));
-  const allowed = normalized === '/SKILL' || normalized.startsWith('/agents/') || normalized.startsWith('/references/') || normalized.startsWith('/assets/');
-  if (!allowed || normalized === '/assets') diagnostics.push(error('INVALID_FRAME_PATH', 'Frame path is outside allowed roots.'));
+  if (normalized === '/') diagnostics.push(error('INVALID_FRAME_PATH', 'Frame path must include at least one safe segment.'));
+  if (normalized === '/assets') diagnostics.push(error('INVALID_FRAME_PATH', 'Asset frame path must include a subdirectory.'));
   const badSegment = normalized.split('/').filter(Boolean).find((seg) => seg === '..' || !SAFE_SEGMENT.test(seg));
   if (badSegment) diagnostics.push(error('INVALID_FRAME_PATH', `Unsafe path segment: ${badSegment}`));
   if (normalized.split('/').some((seg) => EXT_RE.test(seg))) diagnostics.push(error('FRAME_EXTENSION_NOT_ALLOWED', `Frame names should not contain file extensions. Rename ${normalized} without the extension.`));
