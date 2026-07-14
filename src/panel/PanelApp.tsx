@@ -53,13 +53,10 @@ function formatBytes(bytes: number): string {
 export function PanelApp() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [status, setStatus] = useState('');
-  const [blob, setBlob] = useState<Blob | null>(null);
   const hasScanned = useRef(false);
 
   const runScan = useCallback(async () => {
     setStatus('Scanning board…');
-    setBlob(null);
-
     try {
       console.info('[Create SKILL] Starting board scan.');
       const scan = await scanBoard('entire');
@@ -86,7 +83,7 @@ export function PanelApp() {
     void runScan();
   }, [runScan]);
 
-  async function build() {
+  async function createAndDownload() {
     if (!result) return;
 
     setStatus('Validating SKILL…');
@@ -103,9 +100,9 @@ export function PanelApp() {
 
     setStatus('Compressing ZIP…');
     const zip = await buildSkillZip(validation.rootName, result.files);
-    setBlob(zip);
-    setStatus('Your SKILL is ready.');
-    console.info('[Create SKILL] ZIP build completed successfully.');
+    downloadZip(zip);
+    setStatus('Your SKILL download has started.');
+    console.info('[Create SKILL] ZIP build and download completed successfully.');
   }
 
   const diagnostics = result?.diagnostics ?? [];
@@ -114,13 +111,12 @@ export function PanelApp() {
   const info = diagnostics.filter((diagnostic) => diagnostic.level === 'info');
   const hasExcludedFrames = Boolean(result?.excludedFrames.length);
   const totalBytes = result?.files.reduce((sum, file) => sum + file.size, 0) ?? 0;
-  const canCreateZip = Boolean(result) && errors.length === 0 && !blob;
+  const canDownloadZip = Boolean(result) && errors.length === 0;
 
   return (
     <main className="panel-shell">
       <header className="hero" aria-labelledby="panel-title">
         <div>
-          <p className="eyebrow">Miro to Codex</p>
           <h1 id="panel-title">Create a SKILL</h1>
           <p className="lede">Scan board frames, validate required files, and package a ready-to-install Skill.</p>
         </div>
@@ -136,14 +132,9 @@ export function PanelApp() {
         <button className="secondary-button" onClick={runScan} type="button">
           Rescan board
         </button>
-        <button className="primary-button" disabled={!canCreateZip} onClick={build} type="button">
-          Create SKILL.zip
+        <button className="primary-button" disabled={!canDownloadZip} onClick={createAndDownload} type="button">
+          Download SKILL.zip
         </button>
-        {blob && (
-          <button className="success-button" onClick={() => downloadZip(blob)} type="button">
-            Download SKILL.zip
-          </button>
-        )}
       </section>
 
       {!result ? (
@@ -183,7 +174,7 @@ export function PanelApp() {
           ) : (
             <section className="notice success-notice" aria-label="Export ready">
               <h2>Ready to package</h2>
-              <p>No blocking validation errors were found. Create the ZIP, then download it when it is ready.</p>
+              <p>No blocking validation errors were found. Download the ZIP to create and save the Skill package.</p>
             </section>
           )}
 
