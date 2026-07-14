@@ -259,6 +259,38 @@ button:disabled {
   white-space: nowrap;
 }
 
+.collapsible-card > summary.section-heading {
+  cursor: pointer;
+  list-style: none;
+  margin-bottom: 0;
+}
+
+.collapsible-card[open] > summary.section-heading {
+  margin-bottom: 10px;
+}
+
+.collapsible-card > summary.section-heading::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible-card > summary.section-heading::after {
+  content: '▸';
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  transition: transform 160ms ease;
+}
+
+.collapsible-card[open] > summary.section-heading::after {
+  transform: rotate(90deg);
+}
+
+.collapsible-card > summary.section-heading:focus-visible {
+  border-radius: 8px;
+  outline: 3px solid rgba(66, 98, 255, 0.28);
+  outline-offset: 2px;
+}
+
 ul {
   margin: 0;
   padding: 0;
