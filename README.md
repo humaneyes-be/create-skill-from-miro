@@ -1,6 +1,6 @@
-# Board to Skill
+# Create SKILL from Miro
 
-Board to Skill is a Miro Web SDK app that converts specifically named Miro frames into a downloadable SKILL ZIP file.
+A Miro Web SDK app that converts specifically named Miro frames into a downloadable SKILL ZIP file.
 
 The app scans a board, serializes frame contents into text files, validates the required Skill files, and packages the result as `SKILL.zip`.
 
