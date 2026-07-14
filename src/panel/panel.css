@@ -1,1 +1,101 @@
-body{font-family:Inter,Arial,sans-serif;margin:0;background:#f8f8fb;color:#1f2937}main{box-sizing:border-box;width:320px;min-height:100vh;padding:12px}h2{font-size:16px;margin:12px 0 6px}button{display:block;width:100%;margin:8px 0;padding:10px;border:0;border-radius:8px;background:#4262ff;color:white;font-weight:700}button:disabled{background:#a8b0c3}.status{background:#eef2ff;padding:8px;border-radius:8px;margin:0 0 8px}.error{color:#b91c1c}.warning{color:#92400e}.notice{background:#fee2e2;border-radius:8px;padding:8px}ul{padding-left:18px;overflow-wrap:anywhere;margin:0 0 12px}.empty{color:#6b7280;margin:0 0 12px}.frame-error{margin-bottom:8px}.frame-error strong,.frame-error span,.frame-error small{display:block}.frame-error small{color:#7f1d1d;font-size:11px;margin-top:2px}
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html,
+body {
+  overflow-y: auto;
+}
+
+body {
+  font-family: Inter, Arial, sans-serif;
+  margin: 0;
+  background: #fff;
+  color: #1f2937;
+}
+
+main {
+  box-sizing: border-box;
+  width: 320px;
+  min-height: 100vh;
+  padding: 12px;
+  background: #fff;
+}
+
+h2 {
+  font-size: 16px;
+  margin: 12px 0 6px;
+}
+
+button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #4262ff;
+  color: white;
+  font-weight: 700;
+}
+
+button:disabled {
+  background: #a8b0c3;
+}
+
+.status {
+  background: #eef2ff;
+  padding: 8px;
+  border-radius: 8px;
+  margin: 0 0 8px;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.warning {
+  color: #92400e;
+}
+
+.notice {
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.error.notice {
+  background: #fee2e2;
+}
+
+.warning-notice {
+  background: #fef3c7;
+}
+
+ul {
+  padding-left: 18px;
+  overflow-wrap: anywhere;
+  margin: 0 0 12px;
+}
+
+.empty {
+  color: #6b7280;
+  margin: 0 0 12px;
+}
+
+.frame-error {
+  margin-bottom: 8px;
+}
+
+.frame-error strong,
+.frame-error span,
+.frame-error small {
+  display: block;
+}
+
+.frame-error small {
+  color: #7f1d1d;
+  font-size: 11px;
+  margin-top: 2px;
+}
