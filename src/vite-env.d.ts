@@ -1,2 +1,2 @@
 /// <reference types="vite/client" />
-declare const miro: any;
+/// <reference types="@mirohq/websdk-types" />
