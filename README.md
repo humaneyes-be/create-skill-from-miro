@@ -101,3 +101,12 @@ The production build uses `/board-to-skill/` as the Vite base path when running 
 | `npm run dev` | Starts Vite for local development. |
 | `npm run build` | Type-checks and builds the production app. |
 | `npm test` | Runs the Vitest test suite. |
+
+## App icons
+
+Upload these SVG assets when configuring the Miro app icon:
+
+- Monochrome toolbar icon: `public/icons/monochrome.svg`
+- Full-color toolbar panel and Marketplace icon: `public/icons/full-color.svg`
+
+Both icons are square SVGs, non-empty, and under the 5000 byte upload limit. The monochrome icon uses a single solid color and no gradients.
