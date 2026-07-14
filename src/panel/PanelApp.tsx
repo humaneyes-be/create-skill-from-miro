@@ -198,13 +198,13 @@ export function PanelApp() {
             </section>
           )}
 
-          <section className="card" aria-labelledby="files-heading">
-            <div className="section-heading">
-              <h2 id="files-heading">Files to export</h2>
+          <details className="card collapsible-card">
+            <summary className="section-heading">
+              <h2 id="included-heading">Included frames</h2>
               <span>{result.files.length} total</span>
-            </div>
+            </summary>
             {result.files.length > 0 ? (
-              <ul className="file-list">
+              <ul className="file-list" aria-labelledby="included-heading">
                 {result.files.map((file) => (
                   <li key={file.path}>
                     <span>{file.path}</span>
@@ -215,15 +215,15 @@ export function PanelApp() {
             ) : (
               <p className="empty">No exportable frames were found.</p>
             )}
-          </section>
+          </details>
 
-          <section className="card" aria-labelledby="excluded-heading">
-            <div className="section-heading">
+          <details className="card collapsible-card">
+            <summary className="section-heading">
               <h2 id="excluded-heading">Excluded frames</h2>
               <span>{result.excludedFrames.length} skipped</span>
-            </div>
+            </summary>
             {hasExcludedFrames ? (
-              <ul className="excluded-list">
+              <ul className="excluded-list" aria-labelledby="excluded-heading">
                 {result.excludedFrames.map((frame) => (
                   <li key={frame.id} className="excluded-frame">
                     <strong>{frame.title}</strong>
@@ -234,7 +234,7 @@ export function PanelApp() {
             ) : (
               <p className="empty">No frames were excluded.</p>
             )}
-          </section>
+          </details>
         </section>
       )}
 
