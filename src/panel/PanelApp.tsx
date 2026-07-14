@@ -17,6 +17,17 @@ function logDiagnostics(context: string, diagnostics: Diagnostic[]) {
   }
 }
 
+function diagnosticUiMessage(diagnostic: Diagnostic): string {
+  if (diagnostic.code === 'INVALID_FRAME_PATH') return 'The name of this frame is invalid.';
+  if (diagnostic.code === 'FRAME_EXTENSION_NOT_ALLOWED') return 'Frame names should not include file extensions.';
+  if (diagnostic.code === 'DUPLICATE_OUTPUT_PATH') return 'Another frame uses the same export path.';
+  return diagnostic.message;
+}
+
+function summarizeDiagnosticsForUi(diagnostics: Diagnostic[]): string {
+  return [...new Set(diagnostics.map(diagnosticUiMessage))].join(' ');
+}
+
 export function PanelApp() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [status, setStatus] = useState('');
@@ -75,6 +86,9 @@ export function PanelApp() {
 
   const errors = result?.diagnostics.filter((diagnostic) => diagnostic.level === 'error') ?? [];
   const hasExcludedFrames = Boolean(result?.excludedFrames.length);
+  const hasExcludedFrameErrors = Boolean(
+    result?.excludedFrames.some((frame) => frame.diagnostics.some((diagnostic) => diagnostic.level === 'error')),
+  );
 
   return (
     <main>
@@ -94,7 +108,7 @@ export function PanelApp() {
               {result.excludedFrames.map((frame) => (
                 <li key={frame.id} className="error frame-error">
                   <strong>{frame.title}</strong>
-                  <span>{frame.reason}</span>
+                  <span>{summarizeDiagnosticsForUi(frame.diagnostics)}</span>
                   <small>
                     {frame.diagnostics.map((diagnostic) => diagnostic.code).join(', ')}
                   </small>
@@ -105,14 +119,21 @@ export function PanelApp() {
             <p className="empty">No frames were excluded.</p>
           )}
 
-          {errors.length > 0 && (
-            <p className="error notice">
-              Export is blocked. Review the excluded frames above and make sure required frames like /SKILL and
-              /agents/openai are included and valid.
+          {hasExcludedFrameErrors && (
+            <p className="warning notice warning-notice">
+              Some frames have problems and will not be exported. You can still create the ZIP, but not everything might
+              be exported.
             </p>
           )}
 
-          <button onClick={build} disabled={errors.length > 0}>Create SKILL.zip</button>
+          {errors.length > 0 && (
+            <p className="error notice">
+              The ZIP cannot be created yet. Make sure required frames like /SKILL and /agents/openai are included and
+              valid.
+            </p>
+          )}
+
+          <button onClick={build}>Create SKILL.zip</button>
           {blob && <button onClick={() => downloadZip(blob)}>Download SKILL.zip</button>}
         </section>
       )}
