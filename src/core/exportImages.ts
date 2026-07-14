@@ -1,0 +1,6 @@
+import type { ExportAsset } from '../model/assets';
+import { classifyAsset } from './serializeAssets';
+import { getAssetKindDirectory, sanitizeFileName } from './paths';
+export const MAX_CONCURRENT_IMAGE_DOWNLOADS = 4;
+export async function mapLimit<T,R>(items:T[], limit:number, fn:(item:T)=>Promise<R>): Promise<R[]> { const out:R[]=[]; let next=0; await Promise.all(Array.from({length:Math.min(limit,items.length)}, async()=>{ while(next<items.length){ const i=next++; out[i]=await fn(items[i]); }})); return out; }
+export async function exportMiroImages(images:any[], sourceFramePath:string): Promise<ExportAsset[]> { return mapLimit(images, MAX_CONCURRENT_IMAGE_DOWNLOADS, async (image:any) => { const file=await image.getFile('original'); const bytes=await file.arrayBuffer(); const raw=file.name || image.title || `${image.id}.png`; const name=sanitizeFileName(raw); const ext=name.split('.').pop() || 'png'; const mime=file.type || `image/${ext}`; const kind=classifyAsset(mime, ext); return { id:image.id, sourceItemId:image.id, sourceFramePath, sourceType:'miro-image', name, title:image.title, alt:image.alt || image.title || name.replace(/\.[^.]+$/,''), mimeType:mime, extension:ext, kind, outputPath:`${getAssetKindDirectory(sourceFramePath, kind)}${name}`, bytes, size:bytes.byteLength }; }); }
