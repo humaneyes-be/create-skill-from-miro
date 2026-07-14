@@ -115,25 +115,31 @@ export function PanelApp() {
 
   return (
     <main className="panel-shell">
-      <header className="hero" aria-labelledby="panel-title">
-        <div>
-          <h1 id="panel-title">Create a SKILL</h1>
-          <p className="lede">Scan board frames, validate required files, and package a ready-to-install Skill.</p>
-        </div>
-      </header>
-
       {status && (
         <p className="status" role="status" aria-live="polite">
           {status}
         </p>
       )}
 
+      {result &&
+        (errors.length > 0 ? (
+          <section className="notice error-notice top-notice" aria-label="Export blocked">
+            <h2>Export needs attention</h2>
+            <p>Fix blocking issues before creating the ZIP. Required frames include /SKILL.md and /agents/openai.yaml.</p>
+          </section>
+        ) : (
+          <section className="notice success-notice top-notice" aria-label="Export ready">
+            <h2>Ready to package</h2>
+            <p>No blocking validation errors were found. Download the ZIP to create and save the Skill package.</p>
+          </section>
+        ))}
+
       <section className="actions" aria-label="Primary actions">
-        <button className="secondary-button" onClick={runScan} type="button">
-          Rescan board
-        </button>
         <button className="primary-button" disabled={!canDownloadZip} onClick={createAndDownload} type="button">
           Download SKILL.zip
+        </button>
+        <button className="secondary-button" onClick={runScan} type="button">
+          Rescan board
         </button>
       </section>
 
@@ -165,18 +171,6 @@ export function PanelApp() {
               <span className="summary-label">Blocking errors</span>
             </div>
           </section>
-
-          {errors.length > 0 ? (
-            <section className="notice error-notice" aria-label="Export blocked">
-              <h2>Export needs attention</h2>
-              <p>Fix blocking issues before creating the ZIP. Required frames include /SKILL.md and /agents/openai.yaml.</p>
-            </section>
-          ) : (
-            <section className="notice success-notice" aria-label="Export ready">
-              <h2>Ready to package</h2>
-              <p>No blocking validation errors were found. Download the ZIP to create and save the Skill package.</p>
-            </section>
-          )}
 
           {diagnostics.length > 0 && (
             <section className="card" aria-labelledby="diagnostics-heading">
