@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { scanBoard } from '../core/scanBoard';
 import { validateSkillFiles } from '../core/validateSkill';
 import { buildSkillZip, downloadZip } from '../core/buildSkillZip';
-import type { Diagnostic } from '../model/diagnostics';
+import type { Diagnostic, DiagnosticLevel } from '../model/diagnostics';
 import type { ScanResult } from '../model/scanResult';
 
 function logDiagnostics(context: string, diagnostics: Diagnostic[]) {
@@ -16,7 +16,6 @@ function logDiagnostics(context: string, diagnostics: Diagnostic[]) {
     else console.info(message, diagnostic.details ?? '');
   }
 }
-
 
 function logGeneratedTextFiles(context: string, files: ScanResult['files']) {
   for (const file of files) {
@@ -37,6 +36,18 @@ function diagnosticUiMessage(diagnostic: Diagnostic): string {
 
 function summarizeDiagnosticsForUi(diagnostics: Diagnostic[]): string {
   return [...new Set(diagnostics.map(diagnosticUiMessage))].join(' ');
+}
+
+function diagnosticLabel(level: DiagnosticLevel): string {
+  if (level === 'error') return 'Error';
+  if (level === 'warning') return 'Warning';
+  return 'Info';
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function PanelApp() {
@@ -97,37 +108,142 @@ export function PanelApp() {
     console.info('[Create SKILL] ZIP build completed successfully.');
   }
 
-  const errors = result?.diagnostics.filter((diagnostic) => diagnostic.level === 'error') ?? [];
+  const diagnostics = result?.diagnostics ?? [];
+  const errors = diagnostics.filter((diagnostic) => diagnostic.level === 'error');
+  const warnings = diagnostics.filter((diagnostic) => diagnostic.level === 'warning');
+  const info = diagnostics.filter((diagnostic) => diagnostic.level === 'info');
   const hasExcludedFrames = Boolean(result?.excludedFrames.length);
+  const totalBytes = result?.files.reduce((sum, file) => sum + file.size, 0) ?? 0;
+  const canCreateZip = Boolean(result) && errors.length === 0 && !blob;
 
   return (
-    <main>
-      {status && <p className="status">{status}</p>}
-      {result && (
-        <section aria-label="Miro frame export results">
-          <button onClick={build}>Create SKILL.zip</button>
-          {blob && <button onClick={() => downloadZip(blob)}>Download SKILL.zip</button>}
+    <main className="panel-shell">
+      <header className="hero" aria-labelledby="panel-title">
+        <div>
+          <p className="eyebrow">Miro to Codex</p>
+          <h1 id="panel-title">Create a SKILL</h1>
+          <p className="lede">Scan board frames, validate required files, and package a ready-to-install Skill.</p>
+        </div>
+      </header>
 
-          <h2>Excluded frames ({result.excludedFrames.length})</h2>
-          {hasExcludedFrames ? (
-            <ul>
-              {result.excludedFrames.map((frame) => (
-                <li key={frame.id} className="excluded-frame">
-                  <strong>{frame.title}</strong>
-                  <span>{summarizeDiagnosticsForUi(frame.diagnostics)}</span>
-                </li>
-              ))}
-            </ul>
+      {status && (
+        <p className="status" role="status" aria-live="polite">
+          {status}
+        </p>
+      )}
+
+      <section className="actions" aria-label="Primary actions">
+        <button className="secondary-button" onClick={runScan} type="button">
+          Rescan board
+        </button>
+        <button className="primary-button" disabled={!canCreateZip} onClick={build} type="button">
+          Create SKILL.zip
+        </button>
+        {blob && (
+          <button className="success-button" onClick={() => downloadZip(blob)} type="button">
+            Download SKILL.zip
+          </button>
+        )}
+      </section>
+
+      {!result ? (
+        <section className="card loading-card" aria-label="Scan progress">
+          <span className="spinner" aria-hidden="true" />
+          <div>
+            <h2>Preparing export preview</h2>
+            <p>We’re checking frame names and required Skill files.</p>
+          </div>
+        </section>
+      ) : (
+        <section aria-label="Miro frame export results" className="results-stack">
+          <section className="summary-grid" aria-label="Export summary">
+            <div className="summary-card">
+              <span className="summary-value">{result.frames.length}</span>
+              <span className="summary-label">Included frames</span>
+            </div>
+            <div className="summary-card">
+              <span className="summary-value">{result.files.length}</span>
+              <span className="summary-label">Files</span>
+            </div>
+            <div className="summary-card">
+              <span className="summary-value">{formatBytes(totalBytes)}</span>
+              <span className="summary-label">Uncompressed</span>
+            </div>
+            <div className={`summary-card ${errors.length ? 'summary-alert' : ''}`}>
+              <span className="summary-value">{errors.length}</span>
+              <span className="summary-label">Blocking errors</span>
+            </div>
+          </section>
+
+          {errors.length > 0 ? (
+            <section className="notice error-notice" aria-label="Export blocked">
+              <h2>Export needs attention</h2>
+              <p>Fix blocking issues before creating the ZIP. Required frames include /SKILL.md and /agents/openai.yaml.</p>
+            </section>
           ) : (
-            <p className="empty">No frames were excluded.</p>
+            <section className="notice success-notice" aria-label="Export ready">
+              <h2>Ready to package</h2>
+              <p>No blocking validation errors were found. Create the ZIP, then download it when it is ready.</p>
+            </section>
           )}
 
-          {errors.length > 0 && (
-            <p className="error notice">
-              The ZIP cannot be created yet. Make sure required frames like /SKILL and /agents/openai are included and
-              valid.
-            </p>
+          {diagnostics.length > 0 && (
+            <section className="card" aria-labelledby="diagnostics-heading">
+              <div className="section-heading">
+                <h2 id="diagnostics-heading">Validation details</h2>
+                <span>{errors.length} errors · {warnings.length} warnings · {info.length} info</span>
+              </div>
+              <ul className="diagnostic-list">
+                {diagnostics.map((diagnostic, index) => (
+                  <li key={`${diagnostic.code}-${diagnostic.framePath ?? diagnostic.itemId ?? index}`} className={`diagnostic-item ${diagnostic.level}`}>
+                    <span className="diagnostic-badge">{diagnosticLabel(diagnostic.level)}</span>
+                    <div>
+                      <strong>{diagnosticUiMessage(diagnostic)}</strong>
+                      {diagnostic.framePath && <span>{diagnostic.framePath}</span>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
+
+          <section className="card" aria-labelledby="files-heading">
+            <div className="section-heading">
+              <h2 id="files-heading">Files to export</h2>
+              <span>{result.files.length} total</span>
+            </div>
+            {result.files.length > 0 ? (
+              <ul className="file-list">
+                {result.files.map((file) => (
+                  <li key={file.path}>
+                    <span>{file.path}</span>
+                    <span>{formatBytes(file.size)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="empty">No exportable frames were found.</p>
+            )}
+          </section>
+
+          <section className="card" aria-labelledby="excluded-heading">
+            <div className="section-heading">
+              <h2 id="excluded-heading">Excluded frames</h2>
+              <span>{result.excludedFrames.length} skipped</span>
+            </div>
+            {hasExcludedFrames ? (
+              <ul className="excluded-list">
+                {result.excludedFrames.map((frame) => (
+                  <li key={frame.id} className="excluded-frame">
+                    <strong>{frame.title}</strong>
+                    <span>{summarizeDiagnosticsForUi(frame.diagnostics)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="empty">No frames were excluded.</p>
+            )}
+          </section>
         </section>
       )}
     </main>
