@@ -72,7 +72,7 @@ export async function scanBoard(mode: 'entire' | 'selected' = 'entire'): Promise
     });
   }
 
-  const serialized = frames.map((frame) => serializeFrame(frame.logicalPath, frame.outputPath, frame.children, frame.isAssetFrame));
+  const serialized = await Promise.all(frames.map((frame) => serializeFrame(frame.logicalPath, frame.outputPath, frame.children, frame.isAssetFrame)));
   const files = serialized.flatMap((result) => result.files);
   const more = serialized.flatMap((result) => result.diagnostics);
 
