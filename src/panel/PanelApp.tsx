@@ -28,7 +28,7 @@ ${file.content}`);
 }
 
 function diagnosticUiMessage(diagnostic: Diagnostic): string {
-  if (diagnostic.code === 'INVALID_FRAME_PATH') return 'The name of this frame is invalid.';
+  if (diagnostic.code === 'INVALID_FRAME_PATH') return 'Frame titles must contain 🤖 and at least one safe filename character.';
   if (diagnostic.code === 'FRAME_EXTENSION_NOT_ALLOWED') return 'Frame names should not include file extensions.';
   if (diagnostic.code === 'DUPLICATE_OUTPUT_PATH') return 'Another frame uses the same export path.';
   return diagnostic.message;
@@ -125,7 +125,7 @@ export function PanelApp() {
         (errors.length > 0 ? (
           <section className="notice error-notice top-notice" aria-label="Export blocked">
             <h2>Export needs attention</h2>
-            <p>Fix blocking issues before creating the ZIP. Required frames include /SKILL.md and /agents/openai.yaml.</p>
+            <p>Fix blocking issues before creating the ZIP. Required frames include 🤖 /SKILL and 🤖 openai.</p>
           </section>
         ) : (
           <section className="notice success-notice top-notice" aria-label="Export ready">
@@ -148,7 +148,7 @@ export function PanelApp() {
           <span className="spinner" aria-hidden="true" />
           <div>
             <h2>Preparing export preview</h2>
-            <p>We’re checking frame names and required Skill files.</p>
+            <p>We’re checking 🤖 frame markers and required Skill files.</p>
           </div>
         </section>
       ) : (
