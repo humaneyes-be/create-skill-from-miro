@@ -125,7 +125,7 @@ export function PanelApp() {
         (errors.length > 0 ? (
           <section className="notice error-notice top-notice" aria-label="Export blocked">
             <h2>Export needs attention</h2>
-            <p>Fix blocking issues before creating the ZIP. Required frames include 🤖 /SKILL and 🤖 openai.</p>
+            <p>Fix blocking issues before creating the ZIP. Required frames include 🤖 SKILL.md and 🤖 openai.yaml.</p>
           </section>
         ) : (
           <section className="notice success-notice top-notice" aria-label="Export ready">
@@ -135,6 +135,12 @@ export function PanelApp() {
         ))}
 
       <section className="actions" aria-label="Primary actions">
+        <p className="download-explainer">
+          This makes a SKILL.zip from frames named 🤖 SKILL.md and 🤖 openai.yaml, plus other 🤖 frames. It includes text and images only, not special files like code files or presentations.{' '}
+          <a href="https://github.com/humaneyes/create-skill-from-miro#required-board-structure" target="_blank" rel="noreferrer">
+            Learn more.
+          </a>
+        </p>
         <button className="primary-button" disabled={!canDownloadZip} onClick={createAndDownload} type="button">
           Download SKILL.zip
         </button>

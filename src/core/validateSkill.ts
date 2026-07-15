@@ -137,8 +137,8 @@ export function validateSkillFiles(
   const skill = files.find((file) => file.path === '/SKILL.md');
   const openai = files.find((file) => file.path === '/agents/openai.yaml');
 
-  if (!skill) diagnostics.push(error('MISSING_REQUIRED_FRAME', '/SKILL frame is required.'));
-  if (!openai) diagnostics.push(error('MISSING_REQUIRED_FRAME', '/agents/openai frame is required.'));
+  if (!skill) diagnostics.push(error('MISSING_REQUIRED_FRAME', 'SKILL.md frame is required.'));
+  if (!openai) diagnostics.push(error('MISSING_REQUIRED_FRAME', 'openai.yaml frame is required.'));
 
   let rootName;
 
