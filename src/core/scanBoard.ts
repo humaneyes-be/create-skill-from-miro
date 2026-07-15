@@ -1,6 +1,7 @@
-import { parseFramePath } from './paths';
-import { serializeFrame } from './serializeFrame';
+import { parseFramePath, relativeLink } from './paths';
+import { getFirstTextBlockSummary, serializeFrame } from './serializeFrame';
 import { error, type Diagnostic } from '../model/diagnostics';
+import type { ExportFile } from '../model/exportFile';
 import type { ExcludedFrame, ScanResult, ScannedFrame } from '../model/scanResult';
 
 function titleFor(frame: { title?: string }): string {
@@ -11,7 +12,34 @@ function summarizeDiagnostics(diagnostics: Diagnostic[]): string {
   return diagnostics.map((d) => d.message).join(' ');
 }
 
+function appendReferenceListToSkill(files: ExportFile[], frames: ScannedFrame[]): ExportFile[] {
+  const references = frames
+    .filter((frame) => frame.outputPath !== SKILL_OUTPUT_PATH && frame.outputPath !== OPENAI_YAML_OUTPUT_PATH && frame.outputPath.endsWith('.md'))
+    .map((frame) => ({ frame, summary: getFirstTextBlockSummary(frame.children, frame.outputPath) }))
+    .filter((entry): entry is { frame: ScannedFrame; summary: string } => Boolean(entry.summary));
+
+  if (!references.length) return files;
+
+  const skillFileIndex = files.findIndex((file) => file.path === SKILL_OUTPUT_PATH && typeof file.content === 'string');
+  if (skillFileIndex === -1) return files;
+
+  const referenceList = [
+    'Here is a list of important reference files you can load for more information:',
+    '',
+    ...references.map(({ frame, summary }) => `- [${frame.outputPath.replace(/^\/+/, '')}](${relativeLink(SKILL_OUTPUT_PATH, frame.outputPath)}): ${summary}`),
+  ].join('\n');
+
+  const skillFile = files[skillFileIndex];
+  const baseContent = String(skillFile.content).replace(/\s*$/, '');
+  const content = `${baseContent}\n\n${referenceList}\n`;
+  const updated = { ...skillFile, content, size: new TextEncoder().encode(content).byteLength };
+
+  return [...files.slice(0, skillFileIndex), updated, ...files.slice(skillFileIndex + 1)];
+}
+
 const DEBUG_MIRO_ITEMS = false;
+const SKILL_OUTPUT_PATH = '/SKILL.md';
+const OPENAI_YAML_OUTPUT_PATH = '/agents/openai.yaml';
 
 function debugMiroChildren(logicalPath: string, children: unknown[]): void {
   if (!DEBUG_MIRO_ITEMS) return;
@@ -99,7 +127,7 @@ export async function scanBoard(mode: 'entire' | 'selected' = 'entire'): Promise
   }
 
   const serialized = await Promise.all(frames.map((frame) => serializeFrame(frame.logicalPath, frame.outputPath, frame.children, frame.isAssetFrame)));
-  const files = serialized.flatMap((result) => result.files);
+  const files = appendReferenceListToSkill(serialized.flatMap((result) => result.files), frames);
   const more = serialized.flatMap((result) => result.diagnostics);
 
   return { frames, excludedFrames, files, assets: [], diagnostics: [...diagnostics, ...more] };

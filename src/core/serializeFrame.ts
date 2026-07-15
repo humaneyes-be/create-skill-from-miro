@@ -93,7 +93,7 @@ function serializeCodeBlock(item: SortableItem, source: string, outputPath: stri
   return `${fence}${language}\n${code}\n${fence}`;
 }
 
-function serializeItem(item: SortableItem, outputPath: string): string {
+export function serializeItem(item: SortableItem, outputPath: string): string {
   const source = getItemSourceText(item);
 
   if (looksLikeCodeItem(item)) return serializeCodeBlock(item, source, outputPath);
@@ -103,6 +103,21 @@ function serializeItem(item: SortableItem, outputPath: string): string {
   if (item.type === 'sticky_note' || item.type === 'stickyNote') return markdown.split('\n\n').map((paragraph, index) => index === 0 ? `- ${paragraph}` : `  ${paragraph}`).join('\n');
   if (item.type === 'shape' && item.style?.fillOpacity !== 0 && item.style?.fillColor) return `> ${markdown.replace(/\n/g, '\n> ')}`;
   return applyHeading(markdown, typeof item.style?.fontSize === 'number' ? item.style.fontSize : typeof item.fontSize === 'number' ? item.fontSize : undefined);
+}
+
+export function getFirstTextBlockSummary(children: unknown[], outputPath: string): string | undefined {
+  const { items } = sortItemsVisually(children as SortableItem[]);
+  const firstTextItem = items.find((item) => item.type !== 'image' && getItemSourceText(item).trim());
+  if (!firstTextItem) return undefined;
+
+  const summary = serializeItem(firstTextItem, outputPath)
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/^-\s+/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return summary || undefined;
 }
 
 export async function serializeFrame(logicalPath: string, outputPath: string, children: unknown[], isAssetFrame = false): Promise<{ files: ExportFile[]; diagnostics: Diagnostic[] }> {
