@@ -24,9 +24,20 @@ export function parseFramePath(title: string): PathResult {
   if (UNSAFE_PATH_RE.test(title) || normalized.includes('/../') || normalized.endsWith('/..')) diagnostics.push(error('INVALID_FRAME_PATH', 'Frame path contains unsafe characters or traversal.'));
   if (normalized === '/') diagnostics.push(error('INVALID_FRAME_PATH', 'Frame title must include at least one safe character besides 🤖.'));
   if (normalized === '/assets') diagnostics.push(error('INVALID_FRAME_PATH', 'Asset frame path must include a subdirectory.'));
+  if (normalized === '/SKILL') diagnostics.push(error('INVALID_FRAME_PATH', 'Use 🤖 SKILL.md for the required Skill instructions frame.'));
+
+  const compactedTitle = title
+    .split(EXPORT_MARKER)
+    .join('')
+    .replace(/\s+/g, '')
+    .replace(/\\+/g, '/')
+    .replace(/\/+/g, '/');
+  const titlePath = compactedTitle.startsWith('/') ? compactedTitle : `/${compactedTitle}`;
+  const requiredOutputPath = titlePath === '/SKILL.md' ? '/SKILL.md' : titlePath === '/openai.yaml' ? '/agents/openai.yaml' : undefined;
+
   if (diagnostics.length) return { ok: false, diagnostics, normalized };
   const isAssetFrame = normalized.startsWith('/assets/');
-  const outputPath = normalized === '/SKILL' ? '/SKILL.md' : normalized === '/openai' ? '/agents/openai.yaml' : isAssetFrame ? `${normalized}/` : `${normalized}.md`;
+  const outputPath = requiredOutputPath ?? (isAssetFrame ? `${normalized}/` : `${normalized}.md`);
   return { ok: true, logicalPath: normalized, outputPath, isAssetFrame };
 }
 

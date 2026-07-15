@@ -113,6 +113,18 @@ button:disabled {
   opacity: 0.55;
 }
 
+.download-explainer {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.download-explainer a {
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
 .primary-button {
   background: var(--primary);
   color: #fff;

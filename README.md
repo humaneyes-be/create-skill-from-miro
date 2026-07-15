@@ -16,12 +16,12 @@ The app scans a board, serializes frame contents into text files, validates the 
 
 Create Miro frames whose titles contain `🤖`. At minimum, the board must include:
 
-- `🤖 /SKILL` (exports as `/SKILL.md`)
-- `🤖 openai` (exports as `/agents/openai.yaml`)
+- `🤖 SKILL.md` (exports as `/SKILL.md`)
+- `🤖 openai.yaml` (exports as `/agents/openai.yaml`)
 
-### `🤖 /SKILL`
+### `🤖 SKILL.md`
 
-The `🤖 /SKILL` frame must start with YAML frontmatter containing only `name` and `description`:
+The `🤖 SKILL.md` frame must start with YAML frontmatter containing only `name` and `description`:
 
 ```markdown
 ---
@@ -36,9 +36,9 @@ Instructions for the skill go here.
 
 The `name` must use lowercase letters, numbers, and hyphens.
 
-### `🤖 openai`
+### `🤖 openai.yaml`
 
-The `🤖 openai` frame must define the Skill interface metadata:
+The `🤖 openai.yaml` frame must define the Skill interface metadata:
 
 ```yaml
 interface:
@@ -49,7 +49,7 @@ interface:
 ## Frame-to-file behavior
 
 - A frame title must contain `🤖` to be exported.
-- The generated path strips `🤖`, spaces, and illegal filename characters; `/SKILL` exports as `/SKILL.md`, and `openai` exports as `/agents/openai.yaml`.
+- The generated path strips `🤖`, spaces, and illegal filename characters; `SKILL.md` exports as `/SKILL.md`, and `openai.yaml` exports as `/agents/openai.yaml`.
 - Sticky notes become Markdown bullets.
 - Large text is converted into headings based on font size.
 - Filled shapes are serialized as blockquotes.
