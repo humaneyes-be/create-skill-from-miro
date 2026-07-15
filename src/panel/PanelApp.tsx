@@ -53,6 +53,7 @@ function formatBytes(bytes: number): string {
 export function PanelApp() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [status, setStatus] = useState('');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const hasScanned = useRef(false);
 
   const runScan = useCallback(async () => {
@@ -136,10 +137,10 @@ export function PanelApp() {
 
       <section className="actions" aria-label="Primary actions">
         <p className="download-explainer">
-          This makes a SKILL.zip from frames named 🤖 SKILL.md and 🤖 openai.yaml, plus other 🤖 frames. It includes text and images only, not special files like code files or presentations.{' '}
-          <a href="https://github.com/humaneyes/create-skill-from-miro#required-board-structure" target="_blank" rel="noreferrer">
+          This plugin makes a SKILL.zip from your Miro board.{' '}
+          <button className="text-button" onClick={() => setIsHelpOpen(true)} type="button">
             Learn more.
-          </a>
+          </button>
         </p>
         <button className="primary-button" disabled={!canDownloadZip} onClick={createAndDownload} type="button">
           Download SKILL.zip
@@ -148,6 +149,27 @@ export function PanelApp() {
           Rescan board
         </button>
       </section>
+
+      {isHelpOpen && (
+        <div className="help-modal-backdrop" role="presentation" onClick={() => setIsHelpOpen(false)}>
+          <section
+            aria-labelledby="help-modal-heading"
+            aria-modal="true"
+            className="help-modal"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <h2 id="help-modal-heading">How it works</h2>
+            <p>This plugin looks for Miro frames that start with 🤖.</p>
+            <p>It turns those frames into files for a SKILL.zip.</p>
+            <p>You need frames named 🤖 SKILL.md and 🤖 openai.yaml.</p>
+            <p>Text and images are included. Other file types are not included.</p>
+            <button className="primary-button" onClick={() => setIsHelpOpen(false)} type="button">
+              Got it
+            </button>
+          </section>
+        </div>
+      )}
 
       {!result ? (
         <section className="card loading-card" aria-label="Scan progress">
