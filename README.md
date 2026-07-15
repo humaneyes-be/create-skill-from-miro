@@ -7,7 +7,7 @@ The app scans a board, serializes frame contents into text files, validates the 
 ## What it does
 
 - Scans either the full Miro board or one selected frame.
-- Exports only frame titles that contain `🤖`; the marker, spaces, and illegal filename characters are stripped before building output paths.
+- Exports only frame titles that contain `🤖`; the marker and illegal filename characters are stripped, and spaces are replaced with hyphens before building output paths.
 - Converts Miro text, sticky notes, and shapes into Markdown-like text.
 - Validates required Skill files before export.
 - Builds a ZIP whose top-level folder is based on the `name` in `/SKILL.md` frontmatter.
@@ -49,7 +49,7 @@ interface:
 ## Frame-to-file behavior
 
 - A frame title must contain `🤖` to be exported.
-- The generated path strips `🤖`, spaces, and illegal filename characters; `SKILL.md` exports as `/SKILL.md`, and `openai.yaml` exports as `/agents/openai.yaml`.
+- The generated path strips `🤖` and illegal filename characters, and replaces spaces with hyphens; `SKILL.md` exports as `/SKILL.md`, and `openai.yaml` exports as `/agents/openai.yaml`.
 - Sticky notes become Markdown bullets.
 - Large text is converted into headings based on font size.
 - Filled shapes are serialized as blockquotes.

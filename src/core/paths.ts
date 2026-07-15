@@ -7,10 +7,16 @@ export type PathResult = { ok: true; logicalPath: string; outputPath: string; is
 
 export function normalizeLogicalPath(input: string): string {
   const withoutMarker = input.split(EXPORT_MARKER).join('');
-  const compacted = withoutMarker.replace(/\s+/g, '').replace(/\\+/g, '/').replace(/\/+/g, '/');
+  const normalizedSlashes = withoutMarker.replace(/\\+/g, '/').replace(/\/+/g, '/');
   const parts: string[] = [];
-  for (const part of compacted.split('/')) {
-    const safe = part.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9_-]+/g, '');
+  for (const part of normalizedSlashes.split('/')) {
+    const safe = part
+      .trim()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/[^A-Za-z0-9_-]+/g, '')
+      .replace(/^-+|-+$/g, '');
     if (!safe || safe === '.') continue;
     parts.push(safe);
   }
