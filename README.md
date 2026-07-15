@@ -1,27 +1,27 @@
 # Create SKILL from Miro
 
-A Miro Web SDK app that converts specifically named Miro frames into a downloadable SKILL ZIP file.
+A Miro Web SDK app that converts Miro frames marked with 🤖 into a downloadable SKILL ZIP file.
 
 The app scans a board, serializes frame contents into text files, validates the required Skill files, and packages the result as `SKILL.zip`.
 
 ## What it does
 
 - Scans either the full Miro board or one selected frame.
-- Uses frame titles as output paths, such as `/SKILL.md` or `/agents/openai.yaml`.
+- Exports only frame titles that contain `🤖`; the marker, spaces, and illegal filename characters are stripped before building output paths.
 - Converts Miro text, sticky notes, and shapes into Markdown-like text.
 - Validates required Skill files before export.
 - Builds a ZIP whose top-level folder is based on the `name` in `/SKILL.md` frontmatter.
 
 ## Required board structure
 
-Create Miro frames whose titles are the file paths you want in the Skill. At minimum, the board must include:
+Create Miro frames whose titles contain `🤖`. At minimum, the board must include:
 
-- `/SKILL.md`
-- `/agents/openai.yaml`
+- `🤖 /SKILL` (exports as `/SKILL.md`)
+- `🤖 openai` (exports as `/agents/openai.yaml`)
 
-### `/SKILL.md`
+### `🤖 /SKILL`
 
-The `/SKILL.md` frame must start with YAML frontmatter containing only `name` and `description`:
+The `🤖 /SKILL` frame must start with YAML frontmatter containing only `name` and `description`:
 
 ```markdown
 ---
@@ -36,9 +36,9 @@ Instructions for the skill go here.
 
 The `name` must use lowercase letters, numbers, and hyphens.
 
-### `/agents/openai.yaml`
+### `🤖 openai`
 
-The `/agents/openai.yaml` frame must define the Skill interface metadata:
+The `🤖 openai` frame must define the Skill interface metadata:
 
 ```yaml
 interface:
@@ -48,7 +48,8 @@ interface:
 
 ## Frame-to-file behavior
 
-- A valid frame title becomes a file path in the generated ZIP.
+- A frame title must contain `🤖` to be exported.
+- The generated path strips `🤖`, spaces, and illegal filename characters; `/SKILL` exports as `/SKILL.md`, and `openai` exports as `/agents/openai.yaml`.
 - Sticky notes become Markdown bullets.
 - Large text is converted into headings based on font size.
 - Filled shapes are serialized as blockquotes.
