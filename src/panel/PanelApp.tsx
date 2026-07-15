@@ -122,18 +122,12 @@ export function PanelApp() {
         </p>
       )}
 
-      {result &&
-        (errors.length > 0 ? (
-          <section className="notice error-notice top-notice" aria-label="Export blocked">
-            <h2>Export needs attention</h2>
-            <p>Fix blocking issues before creating the ZIP. Required frames include 🤖 SKILL.md and 🤖 openai.yaml.</p>
-          </section>
-        ) : (
-          <section className="notice success-notice top-notice" aria-label="Export ready">
-            <h2>Ready to package</h2>
-            <p>No blocking validation errors were found. Download the ZIP to create and save the Skill package.</p>
-          </section>
-        ))}
+      {result && errors.length > 0 && (
+        <section className="notice error-notice top-notice" aria-label="Export blocked">
+          <h2>Export needs attention</h2>
+          <p>Fix blocking issues before creating the ZIP. Required frames include 🤖 SKILL.md and 🤖 openai.yaml.</p>
+        </section>
+      )}
 
       <section className="actions" aria-label="Primary actions">
         <p className="download-explainer">
