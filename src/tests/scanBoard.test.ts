@@ -27,4 +27,29 @@ describe('scanBoard reference list', () => {
     expect(skillFile?.content).toContain('- [references/colors.md](references/colors.md): Use these brand colors.');
     expect(skillFile?.content).not.toContain('openai.yaml');
   });
+  it('appends reference links in reverse frame order', async () => {
+    const skillFrame = frame('skill', '🤖 SKILL.md', [
+      { id: 'skill-text', type: 'text', x: 0, y: 0, width: 400, height: 100, content: '---\nname: demo\ndescription: Demo skill\n---\nUse this skill.' },
+    ]);
+    const openaiFrame = frame('openai', '🤖 openai.yaml', [
+      { id: 'openai-text', type: 'code_block', x: 0, y: 0, width: 400, height: 100, code: 'interface:\n  display_name: Demo' },
+    ]);
+    const firstReferenceFrame = frame('first-reference', '🤖 /references/first', [
+      { id: 'first-summary', type: 'text', x: 0, y: 0, width: 400, height: 50, content: 'First summary.' },
+    ]);
+    const secondReferenceFrame = frame('second-reference', '🤖 /references/second', [
+      { id: 'second-summary', type: 'text', x: 0, y: 0, width: 400, height: 50, content: 'Second summary.' },
+    ]);
+
+    (globalThis as any).miro = { board: { get: vi.fn().mockResolvedValue([skillFrame, openaiFrame, firstReferenceFrame, secondReferenceFrame]) } };
+
+    const result = await scanBoard();
+    const skillFile = result.files.find((file) => file.path === '/SKILL.md');
+    const content = String(skillFile?.content ?? '');
+
+    expect(content.indexOf('- [references/second.md](references/second.md): Second summary.')).toBeLessThan(
+      content.indexOf('- [references/first.md](references/first.md): First summary.'),
+    );
+  });
+
 });

@@ -15,6 +15,7 @@ function summarizeDiagnostics(diagnostics: Diagnostic[]): string {
 function appendReferenceListToSkill(files: ExportFile[], frames: ScannedFrame[]): ExportFile[] {
   const references = frames
     .filter((frame) => frame.outputPath !== SKILL_OUTPUT_PATH && frame.outputPath !== OPENAI_YAML_OUTPUT_PATH && frame.outputPath.endsWith('.md'))
+    .reverse()
     .map((frame) => ({ frame, summary: getFirstTextBlockSummary(frame.children, frame.outputPath) }))
     .filter((entry): entry is { frame: ScannedFrame; summary: string } => Boolean(entry.summary));
 
